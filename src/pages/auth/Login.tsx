@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStore } from '@/lib/store';
 import { toast } from 'sonner';
+import logo from '../../assets/images/logo.png';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -61,7 +63,7 @@ const Login = () => {
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="text-center">
             <div className="h-16 w-16 rounded-full gradient-kenya flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🛒</span>
+              <span className="text-3xl"><img src={logo} alt="website logo" /></span>
             </div>
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
             <CardDescription>Sign in to your FreshMart account</CardDescription>

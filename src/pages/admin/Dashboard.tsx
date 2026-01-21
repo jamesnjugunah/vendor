@@ -78,7 +78,7 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-green-600 flex items-center justify-center">
-              <span className="text-white font-bold">F</span>
+              <span className="text-white font-bold"><img src="/images/logo.png" alt="" /></span>
             </div>
             <div>
               <span className="font-bold text-lg">FreshMart Admin</span>

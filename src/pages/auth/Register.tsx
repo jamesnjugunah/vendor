@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import logo from '../../assets/images/logo.png';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ const Register = () => {
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="text-center">
             <div className="h-16 w-16 rounded-full gradient-kenya flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🛒</span>
+              <span className="text-3xl"><img src={logo} alt="" /></span>
             </div>
             <CardTitle className="text-2xl">Create Account</CardTitle>
             <CardDescription>Join FreshMart Kenya today</CardDescription>
