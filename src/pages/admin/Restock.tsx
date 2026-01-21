@@ -26,6 +26,7 @@ const Restock = () => {
     { branch: string; product: string; quantity: number; time: Date }[]
   >([]);
 
+  // Redirect if not admin
   if (!isAuthenticated || user?.role !== 'admin') {
     navigate('/admin/login');
     return null;
@@ -76,15 +77,15 @@ const Restock = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b bg-sidebar text-sidebar-foreground">
+      <header className="border-b bg-gray-900 text-white">
         <div className="container mx-auto px-4 h-16 flex items-center">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/admin')}
-            className="text-sidebar-foreground hover:bg-sidebar-accent"
+            className="text-white hover:bg-gray-800"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
@@ -94,20 +95,20 @@ const Restock = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Truck className="h-6 w-6 text-primary" />
+          <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+            <Truck className="h-6 w-6 text-green-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Restock Branches</h1>
-            <p className="text-muted-foreground">Transfer inventory from Nairobi HQ to branches</p>
+            <h1 className="text-2xl font-bold text-gray-900">Restock Branches</h1>
+            <p className="text-gray-500">Transfer inventory from Nairobi HQ to branches</p>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Restock Form */}
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
-              <CardTitle>Transfer Stock</CardTitle>
+              <CardTitle className="text-gray-900">Transfer Stock</CardTitle>
               <CardDescription>
                 Move inventory from headquarters to a branch
               </CardDescription>
@@ -119,7 +120,7 @@ const Restock = () => {
                   value={selectedBranch}
                   onValueChange={(v) => setSelectedBranch(v as Branch)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select branch" />
                   </SelectTrigger>
                   <SelectContent>
@@ -137,14 +138,18 @@ const Restock = () => {
               <div className="space-y-2">
                 <Label>Product</Label>
                 <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select product" />
                   </SelectTrigger>
                   <SelectContent>
                     {products.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
                         <div className="flex items-center gap-2">
-                          <span>{product.image}</span>
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="h-6 w-6 rounded object-cover"
+                          />
                           {product.name}
                           <Badge variant="secondary" className="ml-2">
                             HQ: {hqInventory?.products[product.id] || 0}
@@ -165,15 +170,16 @@ const Restock = () => {
                   placeholder="Enter quantity"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
+                  className="bg-white"
                 />
                 {selectedProduct && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500">
                     Available at HQ: {maxQuantity} units
                   </p>
                 )}
               </div>
 
-              <Button className="w-full" onClick={handleRestock}>
+              <Button className="w-full bg-green-600 hover:bg-green-700" onClick={handleRestock}>
                 <Package className="mr-2 h-4 w-4" />
                 Transfer Stock
               </Button>
@@ -181,13 +187,13 @@ const Restock = () => {
           </Card>
 
           {/* HQ Inventory */}
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
-              <CardTitle>Nairobi HQ Inventory</CardTitle>
+              <CardTitle className="text-gray-900">Nairobi HQ Inventory</CardTitle>
               <CardDescription>Current stock at headquarters</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3 max-h-96 overflow-y-auto">
                 {products.map((product) => {
                   const stock = hqInventory?.products[product.id] || 0;
                   const isLow = stock < 100;
@@ -195,13 +201,17 @@ const Restock = () => {
                   return (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-secondary"
+                      className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-3xl">{product.image}</span>
-                        <span className="font-medium">{product.name}</span>
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="h-10 w-10 rounded object-cover"
+                        />
+                        <span className="font-medium text-gray-900">{product.name}</span>
                       </div>
-                      <Badge variant={isLow ? 'destructive' : 'default'}>
+                      <Badge variant={isLow ? 'destructive' : 'secondary'}>
                         {stock} units
                       </Badge>
                     </div>
@@ -214,23 +224,23 @@ const Restock = () => {
 
         {/* Restock History */}
         {restockHistory.length > 0 && (
-          <Card className="mt-6">
+          <Card className="mt-6 bg-white">
             <CardHeader>
-              <CardTitle>Recent Restocks</CardTitle>
+              <CardTitle className="text-gray-900">Recent Restocks</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {restockHistory.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50"
                   >
-                    <CheckCircle className="h-5 w-5 text-primary" />
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                     <div className="flex-1">
-                      <p className="font-medium">
+                      <p className="font-medium text-gray-900">
                         {item.quantity} {item.product} → {item.branch}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-gray-500">
                         {item.time.toLocaleTimeString()}
                       </p>
                     </div>

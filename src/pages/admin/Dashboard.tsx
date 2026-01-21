@@ -24,8 +24,9 @@ import {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout, orders } = useStore();
+  const { user, isAuthenticated, logout, orders, inventory } = useStore();
 
+  // Redirect if not admin
   if (!isAuthenticated || user?.role !== 'admin') {
     navigate('/admin/login');
     return null;
@@ -71,25 +72,25 @@ const AdminDashboard = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b bg-sidebar text-sidebar-foreground sticky top-0 z-50">
+      <header className="border-b bg-gray-900 text-white sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-sidebar-primary flex items-center justify-center">
-              <span className="text-xl">🛒</span>
+            <div className="h-10 w-10 rounded-full bg-green-600 flex items-center justify-center">
+              <span className="text-white font-bold">F</span>
             </div>
             <div>
               <span className="font-bold text-lg">FreshMart Admin</span>
-              <p className="text-xs text-sidebar-foreground/70">Management Portal</p>
+              <p className="text-xs text-gray-400">Management Portal</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm hidden sm:block">{user?.email}</span>
+            <span className="text-sm hidden sm:block text-gray-300">{user?.email}</span>
             <Button
               variant="ghost"
               size="sm"
-              className="text-sidebar-foreground hover:bg-sidebar-accent"
+              className="text-white hover:bg-gray-800"
               onClick={() => {
                 logout();
                 navigate('/');
@@ -102,58 +103,58 @@ const AdminDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">Dashboard</h1>
 
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="bg-white">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="text-3xl font-bold text-primary">KES {totalRevenue.toLocaleString()}</p>
+                  <p className="text-sm text-gray-500">Total Revenue</p>
+                  <p className="text-3xl font-bold text-green-600">KES {totalRevenue.toLocaleString()}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-green-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Orders</p>
-                  <p className="text-3xl font-bold">{totalOrders}</p>
+                  <p className="text-sm text-gray-500">Total Orders</p>
+                  <p className="text-3xl font-bold text-gray-900">{totalOrders}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
-                  <ShoppingCart className="h-6 w-6 text-accent" />
+                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                  <ShoppingCart className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Branches</p>
-                  <p className="text-3xl font-bold">{branches.length}</p>
+                  <p className="text-sm text-gray-500">Branches</p>
+                  <p className="text-3xl font-bold text-gray-900">{branches.length}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center">
-                  <MapPin className="h-6 w-6 text-secondary-foreground" />
+                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                  <MapPin className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Products</p>
-                  <p className="text-3xl font-bold">{products.length}</p>
+                  <p className="text-sm text-gray-500">Products</p>
+                  <p className="text-3xl font-bold text-gray-900">{products.length}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center">
-                  <Package className="h-6 w-6 text-secondary-foreground" />
+                <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
+                  <Package className="h-6 w-6 text-orange-600" />
                 </div>
               </div>
             </CardContent>
@@ -161,7 +162,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="sales" className="space-y-6">
-          <TabsList>
+          <TabsList className="bg-white">
             <TabsTrigger value="sales" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Sales Report
@@ -179,9 +180,9 @@ const AdminDashboard = () => {
           {/* Sales Report Tab */}
           <TabsContent value="sales" className="space-y-6">
             {/* Per-Product Sales */}
-            <Card>
+            <Card className="bg-white">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
                   <TrendingUp className="h-5 w-5" />
                   Sales by Product
                 </CardTitle>
@@ -199,8 +200,12 @@ const AdminDashboard = () => {
                     {productStats.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl">{product.image}</span>
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              className="h-10 w-10 rounded object-cover"
+                            />
                             {product.name}
                           </div>
                         </TableCell>
@@ -210,12 +215,12 @@ const AdminDashboard = () => {
                         </TableCell>
                       </TableRow>
                     ))}
-                    <TableRow className="bg-muted/50 font-bold">
+                    <TableRow className="bg-gray-50 font-bold">
                       <TableCell>Grand Total</TableCell>
                       <TableCell className="text-right">
                         {productStats.reduce((sum, p) => sum + p.totalQuantity, 0)}
                       </TableCell>
-                      <TableCell className="text-right text-primary">
+                      <TableCell className="text-right text-green-600">
                         {totalRevenue.toLocaleString()}
                       </TableCell>
                     </TableRow>
@@ -225,9 +230,9 @@ const AdminDashboard = () => {
             </Card>
 
             {/* Per-Branch Sales */}
-            <Card>
+            <Card className="bg-white">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
                   <MapPin className="h-5 w-5" />
                   Sales by Branch
                 </CardTitle>
@@ -246,7 +251,7 @@ const AdminDashboard = () => {
                     {branchStats.map((branch) => (
                       <TableRow key={branch.id}>
                         <TableCell className="font-medium">{branch.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{branch.location}</TableCell>
+                        <TableCell className="text-gray-500">{branch.location}</TableCell>
                         <TableCell className="text-right">{branch.orderCount}</TableCell>
                         <TableCell className="text-right font-bold">
                           {branch.revenue.toLocaleString()}
@@ -261,25 +266,69 @@ const AdminDashboard = () => {
 
           {/* Inventory Tab */}
           <TabsContent value="inventory">
-            <Card>
+            <Card className="bg-white">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Branch Inventory</CardTitle>
-                <Button onClick={() => navigate('/admin/restock')}>
+                <CardTitle className="text-gray-900">Branch Inventory</CardTitle>
+                <Button onClick={() => navigate('/admin/restock')} className="bg-green-600 hover:bg-green-700">
                   <Package className="mr-2 h-4 w-4" />
                   Restock Branches
                 </Button>
               </CardHeader>
               <CardContent>
-                <InventoryTable />
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Branch</TableHead>
+                        {products.map((p) => (
+                          <TableHead key={p.id} className="text-center min-w-[100px]">
+                            <div className="flex flex-col items-center gap-1">
+                              <img 
+                                src={p.image} 
+                                alt={p.name}
+                                className="h-8 w-8 rounded object-cover"
+                              />
+                              <span className="text-xs">{p.name}</span>
+                            </div>
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {inventory.map((inv) => {
+                        const branch = branches.find((b) => b.id === inv.branch);
+                        return (
+                          <TableRow key={inv.branch}>
+                            <TableCell className="font-medium">
+                              {branch?.name}
+                              {inv.branch === 'nairobi' && (
+                                <Badge variant="outline" className="ml-2">HQ</Badge>
+                              )}
+                            </TableCell>
+                            {products.map((p) => (
+                              <TableCell key={p.id} className="text-center">
+                                <Badge
+                                  variant={inv.products[p.id] < 20 ? 'destructive' : 'secondary'}
+                                >
+                                  {inv.products[p.id] || 0}
+                                </Badge>
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Orders Tab */}
           <TabsContent value="orders">
-            <Card>
+            <Card className="bg-white">
               <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
+                <CardTitle className="text-gray-900">Recent Orders</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -310,8 +359,7 @@ const AdminDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            variant={order.status === 'paid' ? 'default' : 'secondary'}
-                            className={order.status === 'paid' ? 'bg-primary' : ''}
+                            className={order.status === 'paid' ? 'bg-green-600' : ''}
                           >
                             {order.status}
                           </Badge>
@@ -329,53 +377,6 @@ const AdminDashboard = () => {
         </Tabs>
       </main>
     </div>
-  );
-};
-
-// Inventory Table Component
-const InventoryTable = () => {
-  const { inventory } = useStore();
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Branch</TableHead>
-          {products.map((p) => (
-            <TableHead key={p.id} className="text-center">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xl">{p.image}</span>
-                {p.name}
-              </div>
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {inventory.map((inv) => {
-          const branch = branches.find((b) => b.id === inv.branch);
-          return (
-            <TableRow key={inv.branch}>
-              <TableCell className="font-medium">
-                {branch?.name}
-                {inv.branch === 'nairobi' && (
-                  <Badge variant="outline" className="ml-2">HQ</Badge>
-                )}
-              </TableCell>
-              {products.map((p) => (
-                <TableCell key={p.id} className="text-center">
-                  <Badge
-                    variant={inv.products[p.id] < 20 ? 'destructive' : 'secondary'}
-                  >
-                    {inv.products[p.id]}
-                  </Badge>
-                </TableCell>
-              ))}
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
   );
 };
 

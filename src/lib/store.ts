@@ -4,9 +4,12 @@ import { persist } from 'zustand/middleware';
 // Types
 export type Branch = 'nairobi' | 'kisumu' | 'mombasa' | 'nakuru' | 'eldoret';
 
+export type ProductCategory = 'sodas' | 'energy' | 'juice' | 'water';
+
 export interface Product {
   id: string;
-  name: 'Coke' | 'Fanta' | 'Sprite';
+  name: string;
+  category: ProductCategory;
   price: number;
   image: string;
 }
@@ -41,40 +44,34 @@ export interface Inventory {
   products: { [productId: string]: number };
 }
 
-// Store
-interface AppState {
-  // Auth
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (user: User) => void;
-  logout: () => void;
-
-  // Branch
-  selectedBranch: Branch;
-  setBranch: (branch: Branch) => void;
-
-  // Cart
-  cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  getCartTotal: () => number;
-
-  // Orders (mock data for frontend)
-  orders: Order[];
-  addOrder: (order: Order) => void;
-
-  // Inventory (mock data for frontend)
-  inventory: Inventory[];
-  restockBranch: (branch: Branch, productId: string, quantity: number) => void;
-}
-
-// Products data
+// Products data with real images
 export const products: Product[] = [
-  { id: 'coke', name: 'Coke', price: 50, image: '🥤' },
-  { id: 'fanta', name: 'Fanta', price: 50, image: '🧃' },
-  { id: 'sprite', name: 'Sprite', price: 50, image: '🥤' },
+  // Sodas
+  { id: 'coke', name: 'Coca-Cola', category: 'sodas', price: 50, image: '/images/coke.jpg' },
+  { id: 'fanta', name: 'Fanta Orange', category: 'sodas', price: 50, image: '/images/fanta.jpg' },
+  { id: 'sprite', name: 'Sprite', category: 'sodas', price: 50, image: '/images/sprite.jpg' },
+  { id: 'pepsi', name: 'Pepsi', category: 'sodas', price: 50, image: '/images/pepsi.jpg' },
+  
+  // Energy Drinks
+  { id: 'monster', name: 'Monster Energy', category: 'energy', price: 150, image: '/images/monster.jpg' },
+  { id: 'redbull', name: 'Red Bull', category: 'energy', price: 200, image: '/images/redbull.jpg' },
+  
+  // Juices
+  { id: 'orange-juice', name: 'Minute Maid Orange', category: 'juice', price: 80, image: '/images/orange-juice.jpg' },
+  { id: 'apple-juice', name: 'Apple Juice', category: 'juice', price: 80, image: '/images/apple-juice.jpg' },
+  { id: 'lemonade', name: 'Fresh Lemonade', category: 'juice', price: 70, image: '/images/lemonade.jpg' },
+  { id: 'iced-tea', name: 'Iced Tea', category: 'juice', price: 60, image: '/images/iced-tea.jpg' },
+  
+  // Water
+  { id: 'water', name: 'Mineral Water', category: 'water', price: 30, image: '/images/water.jpg' },
+  { id: 'gatorade', name: 'Gatorade', category: 'water', price: 120, image: '/images/gatorade.jpg' },
+];
+
+export const productCategories: { id: ProductCategory; name: string }[] = [
+  { id: 'sodas', name: 'Sodas' },
+  { id: 'energy', name: 'Energy Drinks' },
+  { id: 'juice', name: 'Juices' },
+  { id: 'water', name: 'Water & Sports' },
 ];
 
 export const branches: { id: Branch; name: string; location: string }[] = [
@@ -86,14 +83,15 @@ export const branches: { id: Branch; name: string; location: string }[] = [
 ];
 
 // Initial mock inventory
-const initialInventory: Inventory[] = branches.map(branch => ({
-  branch: branch.id,
-  products: {
-    coke: branch.id === 'nairobi' ? 1000 : 100,
-    fanta: branch.id === 'nairobi' ? 1000 : 100,
-    sprite: branch.id === 'nairobi' ? 1000 : 100,
-  },
-}));
+const createInitialInventory = (): Inventory[] => {
+  return branches.map(branch => ({
+    branch: branch.id,
+    products: products.reduce((acc, product) => {
+      acc[product.id] = branch.id === 'nairobi' ? 1000 : 100;
+      return acc;
+    }, {} as { [key: string]: number }),
+  }));
+};
 
 // Mock orders for demo
 const mockOrders: Order[] = [
@@ -132,6 +130,36 @@ const mockOrders: Order[] = [
   },
 ];
 
+// Store
+interface AppState {
+  // Auth
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (user: User) => void;
+  logout: () => void;
+  updateProfile: (updates: Partial<User>) => void;
+
+  // Branch
+  selectedBranch: Branch;
+  setBranch: (branch: Branch) => void;
+
+  // Cart
+  cart: CartItem[];
+  addToCart: (product: Product) => void;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  getCartTotal: () => number;
+
+  // Orders (mock data for frontend)
+  orders: Order[];
+  addOrder: (order: Order) => void;
+
+  // Inventory (mock data for frontend)
+  inventory: Inventory[];
+  restockBranch: (branch: Branch, productId: string, quantity: number) => void;
+}
+
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -140,6 +168,12 @@ export const useStore = create<AppState>()(
       isAuthenticated: false,
       login: (user) => set({ user, isAuthenticated: true }),
       logout: () => set({ user: null, isAuthenticated: false, cart: [] }),
+      updateProfile: (updates) => {
+        const currentUser = get().user;
+        if (currentUser) {
+          set({ user: { ...currentUser, ...updates } });
+        }
+      },
 
       // Branch
       selectedBranch: 'nairobi',
@@ -186,7 +220,7 @@ export const useStore = create<AppState>()(
       addOrder: (order) => set({ orders: [order, ...get().orders] }),
 
       // Inventory
-      inventory: initialInventory,
+      inventory: createInitialInventory(),
       restockBranch: (branch, productId, quantity) => {
         const inventory = get().inventory;
         const hqInventory = inventory.find(i => i.branch === 'nairobi');
