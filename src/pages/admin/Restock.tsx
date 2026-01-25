@@ -13,12 +13,14 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useStore, products, branches, Branch } from '@/lib/store';
-import { ArrowLeft, Package, Truck, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { StatusBadge } from '@/components/StatusBadge';
 
 const Restock = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, inventory, restockBranch } = useStore();
+  const { user, isAuthenticated, logout, inventory, restockBranch } = useStore();
   const [selectedBranch, setSelectedBranch] = useState<Branch | ''>('');
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -78,22 +80,44 @@ const Restock = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b bg-gray-900 text-white">
-        <div className="container mx-auto px-4 h-16 flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/admin')}
-            className="text-white hover:bg-gray-800"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
+      {/* Sticky Header */}
+      <header className="border-b bg-gray-900 text-white sticky top-0 z-50 shadow-lg">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-full bg-green-600 flex items-center justify-center">
+              <img src="/images/logo.png" alt="" className="rounded-full" />
+            </div>
+            <div>
+              <span className="font-bold text-lg">FreshMart Admin</span>
+              <p className="text-xs text-gray-400">Restock Management</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm hidden sm:block text-gray-300">{user?.email}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-gray-800 transition-smooth"
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Breadcrumbs */}
+        <Breadcrumbs 
+          items={[
+            { label: 'Dashboard', href: '/admin' },
+            { label: 'Restock Branches' }
+          ]} 
+        />
+
         <div className="flex items-center gap-3 mb-8">
           <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
             <Truck className="h-6 w-6 text-green-600" />
@@ -106,7 +130,7 @@ const Restock = () => {
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Restock Form */}
-          <Card className="bg-white">
+          <Card className="bg-white rounded-consistent">
             <CardHeader>
               <CardTitle className="text-gray-900">Transfer Stock</CardTitle>
               <CardDescription>
@@ -120,10 +144,10 @@ const Restock = () => {
                   value={selectedBranch}
                   onValueChange={(v) => setSelectedBranch(v as Branch)}
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="bg-white rounded-consistent">
                     <SelectValue placeholder="Select branch" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-consistent">
                     {branches
                       .filter((b) => b.id !== 'nairobi')
                       .map((branch) => (
@@ -138,25 +162,30 @@ const Restock = () => {
               <div className="space-y-2">
                 <Label>Product</Label>
                 <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="bg-white rounded-consistent">
                     <SelectValue placeholder="Select product" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {products.map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        <div className="flex items-center gap-2">
-                          <img 
-                            src={product.image} 
-                            alt={product.name}
-                            className="h-6 w-6 rounded object-cover"
-                          />
-                          {product.name}
-                          <Badge variant="secondary" className="ml-2">
-                            HQ: {hqInventory?.products[product.id] || 0}
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="rounded-consistent">
+                    {products.map((product) => {
+                      const stock = hqInventory?.products[product.id] || 0;
+                      return (
+                        <SelectItem key={product.id} value={product.id}>
+                          <div className="flex items-center gap-2">
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              className="h-6 w-6 rounded-consistent object-cover"
+                            />
+                            {product.name}
+                            <StatusBadge
+                              status={stock < 20 ? 'warning' : 'success'}
+                              label={`HQ: ${stock}`}
+                              className="ml-2"
+                            />
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -170,16 +199,19 @@ const Restock = () => {
                   placeholder="Enter quantity"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="bg-white"
+                  className="bg-white rounded-consistent"
                 />
                 {selectedProduct && (
-                  <p className="text-xs text-gray-500">
-                    Available at HQ: {maxQuantity} units
+                  <p className="text-xs font-medium text-gray-600">
+                    Available at HQ: <span className="text-green-600">{maxQuantity}</span> units
                   </p>
                 )}
               </div>
 
-              <Button className="w-full bg-green-600 hover:bg-green-700" onClick={handleRestock}>
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700 transition-smooth rounded-consistent" 
+                onClick={handleRestock}
+              >
                 <Package className="mr-2 h-4 w-4" />
                 Transfer Stock
               </Button>
@@ -201,19 +233,20 @@ const Restock = () => {
                   return (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                      className="flex items-center justify-between p-3 rounded-consistent bg-gray-50 hover:bg-gray-100 transition-smooth"
                     >
                       <div className="flex items-center gap-3">
                         <img 
                           src={product.image} 
                           alt={product.name}
-                          className="h-10 w-10 rounded object-cover"
+                          className="h-10 w-10 rounded-consistent object-cover"
                         />
                         <span className="font-medium text-gray-900">{product.name}</span>
                       </div>
-                      <Badge variant={isLow ? 'destructive' : 'secondary'}>
-                        {stock} units
-                      </Badge>
+                      <StatusBadge
+                        status={isLow ? 'warning' : 'success'}
+                        label={`${stock} units`}
+                      />
                     </div>
                   );
                 })}
@@ -224,7 +257,7 @@ const Restock = () => {
 
         {/* Restock History */}
         {restockHistory.length > 0 && (
-          <Card className="mt-6 bg-white">
+          <Card className="mt-6 bg-white rounded-consistent">
             <CardHeader>
               <CardTitle className="text-gray-900">Recent Restocks</CardTitle>
             </CardHeader>
@@ -233,7 +266,7 @@ const Restock = () => {
                 {restockHistory.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50"
+                    className="flex items-center gap-3 p-3 rounded-consistent bg-gray-50 hover:bg-gray-100 transition-smooth"
                   >
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <div className="flex-1">

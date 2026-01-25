@@ -10,6 +10,7 @@ import AdminLogin from "./pages/auth/AdminLogin";
 import Shop from "./pages/customer/Shop";
 import Cart from "./pages/customer/Cart";
 import Profile from "./pages/customer/Profile";
+import ProductDetail from "./pages/customer/ProductDetail";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Restock from "./pages/admin/Restock";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
 
           {/* Customer Routes */}
           <Route path="/shop" element={<Shop />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/profile" element={<Profile />} />
 

@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useStore, branches } from '@/lib/store';
-import { ArrowLeft, User, Mail, Phone, MapPin, ShoppingBag, Save } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, ShoppingBag, Save, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, updateProfile, orders, selectedBranch } = useStore();
+  const { user, isAuthenticated, updateProfile, logout, orders, selectedBranch } = useStore();
   
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -37,14 +37,29 @@ const Profile = () => {
     toast.success('Profile updated successfully');
   };
 
+  const handleSignOut = () => {
+    logout();
+    toast.success('Signed out successfully');
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate('/shop')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Shop
+          </Button>
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={handleSignOut}
+            className="rounded-consistent"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
           </Button>
         </div>
       </header>
@@ -200,19 +215,32 @@ const Profile = () => {
               ) : (
                 <div className="space-y-3">
                   {userOrders.slice(0, 5).map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {order.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {branches.find(b => b.id === order.branch)?.name} • {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
+                    <div key={order.id} className="border rounded-lg overflow-hidden">
+                      <div className="flex items-center justify-between p-4 bg-gray-50">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">
+                            {order.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {branches.find(b => b.id === order.branch)?.name} • {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-green-600">KES {order.total}</p>
+                          <p className="text-xs text-gray-500 font-mono">{order.mpesaCode}</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600">KES {order.total}</p>
-                        <p className="text-xs text-gray-500 font-mono">{order.mpesaCode}</p>
-                      </div>
+                      {order.deliveryAddress && (
+                        <div className="px-4 py-3 bg-white border-t">
+                          <p className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            Delivery Address:
+                          </p>
+                          <p className="text-xs text-gray-600 whitespace-pre-wrap bg-gray-50 p-2 rounded">
+                            {order.deliveryAddress}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

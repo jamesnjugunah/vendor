@@ -36,7 +36,13 @@
     --input: 145 15% 88%;
     --ring: 145 63% 32%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem; /* 8px consistent border radius */
+
+    /* Status colors for better UX */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
     /* Brand specific */
     --coke: 0 80% 45%;
@@ -117,5 +123,20 @@
   
   .glass-effect {
     @apply backdrop-blur-md bg-card/80;
+  }
+
+  /* Smooth transitions for hover effects */
+  .transition-smooth {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  /* Table row hover effect */
+  .table-row-hover {
+    @apply hover:bg-muted/50 transition-smooth cursor-pointer;
+  }
+
+  /* Consistent border radius */
+  .rounded-consistent {
+    border-radius: 0.5rem; /* 8px */
   }
 }

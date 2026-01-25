@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import logo from '../../assets/images/logo.png'
 import {
   Select,
@@ -12,11 +13,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useStore, products, branches, Branch, productCategories, ProductCategory } from '@/lib/store';
-import { ShoppingCart, Plus, Minus, MapPin, LogOut, User, Star, Flame, TrendingUp, Tag } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, MapPin, LogOut, User, Star, Flame, TrendingUp, Tag, Search, X } from 'lucide-react';
 
 const Shop = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const {
     user,
     isAuthenticated,
@@ -33,9 +37,47 @@ const Shop = () => {
   const currentBranch = branches.find((b) => b.id === selectedBranch);
   const branchInventory = inventory.find((i) => i.branch === selectedBranch);
 
-  const filteredProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  // Filter products by search and category
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+    const matchesSearch = searchQuery === '' || 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.brand && p.brand.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
+
+  // Get search suggestions
+  const searchSuggestions = searchQuery.length >= 2
+    ? products.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.brand && p.brand.toLowerCase().includes(searchQuery.toLowerCase()))
+      ).slice(0, 6)
+    : [];
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setShowSuggestions(value.length >= 2);
+  };
+
+  const handleSuggestionClick = (productId: string) => {
+    setShowSuggestions(false);
+    setSearchQuery('');
+    navigate(`/product/${productId}`);
+  };
 
   const getItemQuantity = (productId: string) => {
     const item = cart.find((i) => i.product.id === productId);
@@ -177,6 +219,81 @@ const Shop = () => {
           </p>
         </div>
 
+        {/* Search Bar with Suggestions */}
+        <div className="mb-6 relative" ref={searchRef}>
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search for drinks... (e.g., Coca-Cola, Fanta, Water)"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+              className="pl-12 pr-10 h-14 text-base bg-white border-2 border-gray-200 focus:border-green-500 rounded-xl shadow-sm"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setShowSuggestions(false);
+                }}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Search Suggestions Dropdown */}
+          {showSuggestions && searchSuggestions.length > 0 && (
+            <div className="absolute top-full mt-2 w-full bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden z-50 max-h-96 overflow-y-auto">
+              {searchSuggestions.map((product) => (
+                <button
+                  key={product.id}
+                  onClick={() => handleSuggestionClick(product.id)}
+                  className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                >
+                  <div className="w-16 h-16 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-semibold text-gray-900">{product.name}</p>
+                    {product.brand && (
+                      <p className="text-xs text-gray-500">{product.brand}</p>
+                    )}
+                    <p className="text-sm font-bold text-green-600 mt-1">KES {product.price}</p>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <Badge variant="outline" className="text-xs">
+                      {productCategories.find(c => c.id === product.category)?.name || product.category}
+                    </Badge>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* No results message */}
+          {showSuggestions && searchQuery.length >= 2 && searchSuggestions.length === 0 && (
+            <div className="absolute top-full mt-2 w-full bg-white rounded-xl shadow-xl border-2 border-gray-100 p-6 text-center z-50">
+              <p className="text-gray-500">No drinks found matching "{searchQuery}"</p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setShowSuggestions(false);
+                }}
+                className="text-sm text-green-600 hover:text-green-700 mt-2"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Category Pills */}
         <div className="mb-8">
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -217,7 +334,8 @@ const Shop = () => {
             return (
               <Card 
                 key={product.id} 
-                className="group overflow-hidden border border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300 bg-white"
+                className="group overflow-hidden border border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300 bg-white cursor-pointer"
+                onClick={() => navigate(`/product/${product.id}`)}
               >
                 <div className="relative aspect-square bg-gray-50 p-4">
                   <img 
@@ -295,14 +413,17 @@ const Shop = () => {
                     <Button
                       className="w-full bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all"
                       size="sm"
-                      onClick={() => addToCart(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product);
+                      }}
                       disabled={stock === 0}
                     >
                       <Plus className="mr-1 h-4 w-4" />
                       {stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                     </Button>
                   ) : (
-                    <div className="flex items-center justify-between bg-gray-100 rounded-lg p-1.5">
+                    <div className="flex items-center justify-between bg-gray-100 rounded-lg p-1.5" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
                         size="icon"

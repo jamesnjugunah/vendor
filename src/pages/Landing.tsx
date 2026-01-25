@@ -1,11 +1,23 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, ShoppingCart, Users, TrendingUp, Sparkles, Clock, Shield } from 'lucide-react';
-import { branches } from '@/lib/store';
+import { branches, useStore } from '@/lib/store';
 import logo from '../assets/images/logo.png';
 
 const Landing = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, setRedirectAfterLogin } = useStore();
+
+  const handlePremiumDrinkClick = (productId: string) => {
+    if (isAuthenticated) {
+      navigate(`/product/${productId}`);
+    } else {
+      setRedirectAfterLogin(`/product/${productId}`);
+      navigate('/login');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/10">
       {/* Header */}
@@ -101,14 +113,15 @@ const Landing = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             {[
-              { name: 'Pepsi', image: '/images/coke.jpg', desc: 'Classic Pepsi', color: 'from-blue-500/20 to-blue-600/20' },
-              { name: 'Fanta', image: '/images/fanta.jpg', desc: 'Orange Fanta', color: 'from-orange-500/20 to-orange-600/20' },
-              { name: 'Sprite', image: '/images/sprite.jpg', desc: 'Lemon-Lime Sprite', color: 'from-green-500/20 to-green-600/20' },
+              { name: 'Pepsi', image: '/images/coke.jpg', desc: 'Classic Pepsi', color: 'from-blue-500/20 to-blue-600/20', productId: '4' },
+              { name: 'Fanta', image: '/images/fanta.jpg', desc: 'Orange Fanta', color: 'from-orange-500/20 to-orange-600/20', productId: '2' },
+              { name: 'Sprite', image: '/images/sprite.jpg', desc: 'Lemon-Lime Sprite', color: 'from-green-500/20 to-green-600/20', productId: '3' },
             ].map((product, index) => (
               <Card
                 key={product.name}
-                className="overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm group"
+                className="overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm group cursor-pointer"
                 style={{ animation: `fadeInUp 0.8s ease-out ${0.2 + index * 0.1}s both` }}
+                onClick={() => handlePremiumDrinkClick(product.productId)}
               >
                 <div className="h-48 sm:h-56 md:h-64 overflow-hidden relative">
                   <div className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>

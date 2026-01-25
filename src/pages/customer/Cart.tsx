@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useStore, branches } from '@/lib/store';
-import { ArrowLeft, Minus, Plus, Trash2, Phone, Loader2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Trash2, Phone, Loader2, CheckCircle, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+import DeliveryAddressInput from '@/components/DeliveryAddressInput';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -20,13 +21,17 @@ const Cart = () => {
     clearCart,
     getCartTotal,
     selectedBranch,
+    setBranch,
     addOrder,
+    deliveryAddress,
+    setDeliveryAddress,
   } = useStore();
 
   const [phoneNumber, setPhoneNumber] = useState(user?.phone || '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStep, setPaymentStep] = useState<'cart' | 'payment' | 'success'>('cart');
   const [mpesaCode, setMpesaCode] = useState('');
+  const [isLocationValid, setIsLocationValid] = useState(false);
 
   const currentBranch = branches.find((b) => b.id === selectedBranch);
 
@@ -38,6 +43,18 @@ const Cart = () => {
   const handlePayment = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
       toast.error('Please enter a valid M-Pesa phone number');
+      return;
+    }
+
+    if (!deliveryAddress || deliveryAddress.trim() === '') {
+      toast.error('Please enter your delivery address');
+      return;
+    }
+
+    // Check if location validation is required (if location-based input was used)
+    const hasCoordinates = deliveryAddress.includes('📍 Coordinates:');
+    if (hasCoordinates && !isLocationValid) {
+      toast.error('Please choose a location within the delivery range or select a closer branch');
       return;
     }
 
@@ -57,6 +74,7 @@ const Cart = () => {
       customerId: user!.id,
       customerName: user!.name,
       branch: selectedBranch,
+      deliveryAddress: deliveryAddress,
       items: cart,
       total: getCartTotal(),
       status: 'paid' as const,
@@ -88,7 +106,16 @@ const Cart = () => {
             </div>
             <div className="text-left bg-gray-50 rounded-lg p-4 mb-6">
               <p className="text-sm font-medium text-gray-900 mb-2">Order Details:</p>
-              <p className="text-sm text-gray-600">Branch: {currentBranch?.name}</p>
+              <p className="text-sm text-gray-600 mb-1">Branch: {currentBranch?.name}</p>
+              <div className="text-sm text-gray-600 mt-3">
+                <p className="font-medium mb-1 flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  Delivery Address:
+                </p>
+                <p className="text-xs bg-white p-2 rounded border whitespace-pre-wrap">
+                  {deliveryAddress}
+                </p>
+              </div>
             </div>
             <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => navigate('/shop')}>
               Continue Shopping
@@ -201,14 +228,28 @@ const Cart = () => {
             </Card>
 
             {/* Payment Section */}
-            <Card className="bg-white">
+            <Card className="bg-white rounded-consistent">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900">
                   <Phone className="h-5 w-5" />
-                  M-Pesa Payment
+                  Checkout Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Enhanced Delivery Address Input */}
+                <DeliveryAddressInput
+                  value={deliveryAddress}
+                  onChange={setDeliveryAddress}
+                  selectedBranch={currentBranch!}
+                  onValidationChange={setIsLocationValid}
+                  onBranchSwitch={(branch) => {
+                    setBranch(branch.id);
+                  }}
+                />
+
+                <Separator />
+
+                {/* Phone Number */}
                 <div className="space-y-2">
                   <Label htmlFor="phone">M-Pesa Phone Number</Label>
                   <Input
@@ -217,7 +258,7 @@ const Cart = () => {
                     placeholder="0712345678"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="bg-white"
+                    className="bg-white rounded-consistent"
                   />
                   <p className="text-xs text-gray-500">
                     You'll receive an STK push to complete payment
@@ -238,7 +279,7 @@ const Cart = () => {
                 </div>
 
                 <Button
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-green-600 hover:bg-green-700 rounded-consistent transition-smooth"
                   size="lg"
                   onClick={handlePayment}
                   disabled={isProcessing}

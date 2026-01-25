@@ -13,6 +13,8 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 const Login = () => {
   const navigate = useNavigate();
   const login = useStore((state) => state.login);
+  const redirectAfterLogin = useStore((state) => state.redirectAfterLogin);
+  const setRedirectAfterLogin = useStore((state) => state.setRedirectAfterLogin);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -36,7 +38,15 @@ const Login = () => {
         role: 'customer',
       });
       toast.success('Welcome back!');
-      navigate('/shop');
+      
+      // Navigate to redirect path if exists, otherwise go to shop
+      if (redirectAfterLogin) {
+        const path = redirectAfterLogin;
+        setRedirectAfterLogin(null); // Clear the redirect
+        navigate(path);
+      } else {
+        navigate('/shop');
+      }
     } else {
       toast.error('Please fill in all fields');
     }
