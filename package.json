@@ -2,6 +2,7 @@
   "name": "freshmart-fullstack",
   "version": "1.0.0",
   "description": "FreshMart E-commerce Full Stack Application",
+  "type": "commonjs",
   "scripts": {
     "setup": "node setup.js",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
