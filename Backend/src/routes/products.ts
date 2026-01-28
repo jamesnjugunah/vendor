@@ -51,7 +51,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create product (admin only)
-router.post('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.post('/new', authenticate, requireAdmin, async (req: AuthRequest, res) => {
   try {
     const { name, category, price, image, description, ingredients, nutritional_info, volume, brand } = req.body;
 
