@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Shield } from 'lucide-react';
+import { authApi, setAuthToken } from '@/lib/api';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -19,27 +20,37 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock admin login (in real app, validate admin credentials)
-    if (formData.email === 'admin@freshmart.co.ke' && formData.password === 'admin123') {
-      login({
-        id: 'admin-1',
-        name: 'Admin',
-        email: formData.email,
-        phone: '+254700000000',
-        role: 'admin',
-      });
-      toast.success('Welcome, Admin!');
-      navigate('/admin');
-    } else {
-      toast.error('Invalid admin credentials');
+    
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return;
     }
 
-    setIsLoading(false);
+    setIsLoading(true);
+
+    try {
+      // Call backend API
+      const response = await authApi.login(formData.email, formData.password);
+      
+      // Check if user is admin
+      if (response.user.role !== 'admin') {
+        toast.error('Access denied. Admin credentials required.');
+        return;
+      }
+      
+      // Store token
+      setAuthToken(response.token);
+      
+      // Update store with user data
+      login(response.user);
+      
+      toast.success('Welcome, Admin!');
+      navigate('/admin');
+    } catch (error: any) {
+      toast.error(error.message || 'Invalid admin credentials');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

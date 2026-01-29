@@ -8,6 +8,7 @@ import { useStore } from '@/lib/store';
 import { toast } from 'sonner';
 import logo from '../../assets/images/logo.png';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { authApi, setAuthToken } from '@/lib/api';
 
 
 const Login = () => {
@@ -23,20 +24,24 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock login - in real app, this would validate against backend
-    if (formData.email && formData.password) {
-      login({
-        id: 'user-' + Date.now(),
-        name: formData.email.split('@')[0],
-        email: formData.email,
-        phone: '+254700000000',
-        role: 'customer',
-      });
+    try {
+      // Call backend API
+      const response = await authApi.login(formData.email, formData.password);
+      
+      // Store token
+      setAuthToken(response.token);
+      
+      // Update store with user data
+      login(response.user);
+      
       toast.success('Welcome back!');
       
       // Navigate to redirect path if exists, otherwise go to shop
@@ -47,11 +52,11 @@ const Login = () => {
       } else {
         navigate('/shop');
       }
-    } else {
-      toast.error('Please fill in all fields');
+    } catch (error: any) {
+      toast.error(error.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
