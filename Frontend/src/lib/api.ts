@@ -1,6 +1,9 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-// Helper function to get auth token
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api'; 
+
+
 const getAuthToken = (): string | null => {
   return localStorage.getItem('auth_token');
 };
@@ -11,7 +14,7 @@ async function fetchApi<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = getAuthToken();
-  
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -37,6 +40,7 @@ async function fetchApi<T>(
 // Auth API
 export const authApi = {
   register: async (data: { name: string; email: string; phone: string; password: string }) => {
+    // ❌ Fixed endpoint: was '{api}/auth/register', should be '/auth/register'
     return fetchApi<{ user: any; token: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -68,7 +72,7 @@ export const productsApi = {
     const params = new URLSearchParams();
     if (filters?.category) params.append('category', filters.category);
     if (filters?.search) params.append('search', filters.search);
-    
+
     const query = params.toString() ? `?${params.toString()}` : '';
     return fetchApi<{ products: any[] }>(`/products${query}`);
   },
@@ -124,7 +128,7 @@ export const ordersApi = {
     const params = new URLSearchParams();
     if (filters?.status) params.append('status', filters.status);
     if (filters?.branch) params.append('branch', filters.branch);
-    
+
     const query = params.toString() ? `?${params.toString()}` : '';
     return fetchApi<{ orders: any[] }>(`/orders/admin/all${query}`);
   },
