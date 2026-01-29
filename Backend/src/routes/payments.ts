@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { supabase } from '../config/database';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import mpesaService from '../services/mpesaService';
@@ -6,7 +6,7 @@ import mpesaService from '../services/mpesaService';
 const router = Router();
 
 // Initiate M-Pesa payment
-router.post('/mpesa/stk-push', authenticate, async (req: AuthRequest, res) => {
+router.post('/mpesa/stk-push', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { order_id, phone } = req.body;
 
@@ -59,7 +59,7 @@ router.post('/mpesa/stk-push', authenticate, async (req: AuthRequest, res) => {
 });
 
 // M-Pesa callback
-router.post('/mpesa/callback', async (req, res) => {
+router.post('/mpesa/callback', async (req: Request, res: Response) => {
   try {
     console.log('M-Pesa Callback:', JSON.stringify(req.body, null, 2));
 
@@ -120,7 +120,7 @@ router.post('/mpesa/callback', async (req, res) => {
 });
 
 // Query transaction status
-router.get('/mpesa/query/:checkoutRequestId', authenticate, async (req: AuthRequest, res) => {
+router.get('/mpesa/query/:checkoutRequestId', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { checkoutRequestId } = req.params;
 

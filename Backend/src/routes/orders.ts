@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { supabase } from '../config/database';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Create order
-router.post('/', authenticate, async (req: AuthRequest, res) => {
+router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { branch, delivery_address, delivery_location, items } = req.body;
 
@@ -54,7 +54,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get user's orders
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { data: orders, error } = await supabase
       .from('orders')
@@ -77,7 +77,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get single order
-router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { data: order, error } = await supabase
       .from('orders')
@@ -115,7 +115,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get all orders (admin only)
-router.get('/admin/all', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.get('/admin/all', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { status, branch } = req.query;
 
@@ -154,7 +154,7 @@ router.get('/admin/all', authenticate, requireAdmin, async (req: AuthRequest, re
 });
 
 // Update order status
-router.patch('/:id/status', authenticate, async (req: AuthRequest, res) => {
+router.patch('/:id/status', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.body;
 
