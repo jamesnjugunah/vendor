@@ -1,4 +1,4 @@
 import serverless from "serverless-http";
-import app from "../../Backend/src/server";
+import app from "../server";
 
 export default serverless(app);

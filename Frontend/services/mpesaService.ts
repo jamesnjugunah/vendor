@@ -31,7 +31,7 @@ class MpesaService {
     this.shortcode = process.env.MPESA_SHORTCODE || '';
     this.passkey = process.env.MPESA_PASSKEY || '';
     this.callbackUrl = process.env.MPESA_CALLBACK_URL || '';
-    this.environment = (process.env.MPESA_ENVIRONMENT as 'sandbox' | 'production') || '';
+    this.environment = (process.env.MPESA_ENVIRONMENT as 'sandbox' | 'production') || 'sandbox';
     this.baseUrl = process.env.baseUrl || '';
 
     // Validate credentials on initialization

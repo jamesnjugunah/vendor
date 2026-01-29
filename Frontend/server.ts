@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
-import productRoutes from './routes/products';
+import productRoutes from './routes/products'; // Ensure '../routes/products' exists or adjust the path
 import orderRoutes from './routes/orders';
 import inventoryRoutes from './routes/inventory';
 import paymentRoutes from './routes/payments';
@@ -14,7 +14,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+  origin: true,
   credentials: true,
 }));
 
