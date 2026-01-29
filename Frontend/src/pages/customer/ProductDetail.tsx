@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useStore, getProductById, branches } from '@/lib/store';
+import { useStore, branches } from '@/lib/store';
 import { 
   ArrowLeft, 
   ShoppingCart, 
@@ -18,7 +18,16 @@ import { toast } from 'sonner';
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, addToCart, cart, selectedBranch, inventory } = useStore();
+  const { 
+    isAuthenticated, 
+    addToCart, 
+    cart, 
+    selectedBranch, 
+    inventory,
+    getProductById,
+    products,
+    fetchProducts,
+  } = useStore();
   const [quantity, setQuantity] = useState(1);
 
   const product = id ? getProductById(id) : undefined;
@@ -28,6 +37,13 @@ const ProductDetail = () => {
 
   const cartItem = product ? cart.find(item => item.product.id === product.id) : null;
   const currentCartQuantity = cartItem?.quantity || 0;
+
+  // Fetch products on mount if not already loaded
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts();
+    }
+  }, [fetchProducts, products.length]);
 
   useEffect(() => {
     if (!isAuthenticated) {

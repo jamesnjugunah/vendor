@@ -78,7 +78,7 @@ export const productsApi = {
   },
 
   create: async (data: any) => {
-    return fetchApi<{ product: any }>('/products', {
+    return fetchApi<{ product: any }>('/products/new', {
       method: 'POST',
       body: JSON.stringify(data),
     });

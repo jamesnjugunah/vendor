@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { clearAuthToken } from './api';
+import { clearAuthToken, productsApi, ordersApi } from './api';
 
 // Types
 export type Branch = 'nairobi' | 'kisumu' | 'mombasa' | 'nakuru' | 'eldoret';
@@ -63,221 +63,6 @@ export interface Inventory {
   products: { [productId: string]: number };
 }
 
-// Products data with real details
-export const products: Product[] = [
-  // Sodas
-  { 
-    id: 'coke', 
-    name: 'Coca-Cola', 
-    category: 'sodas', 
-    price: 50, 
-    image: '/images/coke.jpg',
-    description: 'The iconic Coca-Cola taste - a refreshing cola drink that has been bringing people together for over 130 years. Perfectly carbonated with a unique blend of natural flavors.',
-    ingredients: 'Carbonated water, sugar, color (caramel E150d), phosphoric acid, natural flavors including caffeine',
-    nutritionalInfo: {
-      servingSize: '330ml',
-      calories: 139,
-      sugar: '35g',
-      sodium: '15mg'
-    },
-    volume: '330ml',
-    brand: 'The Coca-Cola Company'
-  },
-  { 
-    id: 'fanta', 
-    name: 'Fanta Orange', 
-    category: 'sodas', 
-    price: 50, 
-    image: '/images/fanta.jpg',
-    description: 'Bright, bubbly, and instantly refreshing. Fanta Orange is made with 100% natural flavors and delivers a bold, fruity taste that will make you feel like you\'re biting into a juicy orange.',
-    ingredients: 'Carbonated water, sugar, orange fruit from concentrate (5%), citric acid, natural orange flavoring with other natural flavorings, preservative (potassium sorbate)',
-    nutritionalInfo: {
-      servingSize: '330ml',
-      calories: 144,
-      sugar: '36g',
-      sodium: '12mg'
-    },
-    volume: '330ml',
-    brand: 'The Coca-Cola Company'
-  },
-  { 
-    id: 'sprite', 
-    name: 'Sprite', 
-    category: 'sodas', 
-    price: 50, 
-    image: '/images/sprite.jpg',
-    description: 'Obey Your Thirst! Sprite is a perfectly clear lemon-lime sparkling drink with 100% natural flavors and no caffeine. Crisp, clean taste that really quenches your thirst.',
-    ingredients: 'Carbonated water, sugar, citric acid, natural lemon and lime flavoring, acidity regulator (sodium citrate)',
-    nutritionalInfo: {
-      servingSize: '330ml',
-      calories: 140,
-      sugar: '35g',
-      sodium: '33mg'
-    },
-    volume: '330ml',
-    brand: 'The Coca-Cola Company'
-  },
-  { 
-    id: 'pepsi', 
-    name: 'Pepsi', 
-    category: 'sodas', 
-    price: 50, 
-    image: '/images/pepsi.jpg',
-    description: 'Bold cola taste with a perfect balance of sweet and refreshing. Pepsi delivers that crisp, satisfying taste that cuts through and complements any meal perfectly.',
-    ingredients: 'Carbonated water, sugar, color (caramel E150d), acid (phosphoric acid), flavorings (including caffeine)',
-    nutritionalInfo: {
-      servingSize: '330ml',
-      calories: 150,
-      sugar: '36g',
-      sodium: '18mg'
-    },
-    volume: '330ml',
-    brand: 'PepsiCo'
-  },
-  
-  // Energy Drinks
-  { 
-    id: 'monster', 
-    name: 'Monster Energy', 
-    category: 'energy', 
-    price: 150, 
-    image: '/images/monster.jpg',
-    description: 'Unleash The Beast! Monster Energy packs a powerful punch of energy with a smooth, easy drinking flavor. Perfect blend of the right ingredients in the right proportion to deliver the big bad buzz.',
-    ingredients: 'Carbonated water, sucrose, glucose, citric acid, natural flavors, taurine, sodium citrate, color added, panax ginseng extract, L-carnitine, caffeine, sorbic acid, benzoic acid, niacinamide, sodium chloride, Glycine max glucuronolactone, inositol, guarana extract, pyridoxine hydrochloride, riboflavin, maltodextrin, cyanocobalamin',
-    nutritionalInfo: {
-      servingSize: '500ml',
-      calories: 240,
-      sugar: '54g',
-      sodium: '370mg'
-    },
-    volume: '500ml',
-    brand: 'Monster Beverage Corporation'
-  },
-  { 
-    id: 'redbull', 
-    name: 'Red Bull', 
-    category: 'energy', 
-    price: 200, 
-    image: '/images/redbull.jpg',
-    description: 'Red Bull Energy Drink gives you wings! Appreciated worldwide by top athletes, busy professionals, college students and travelers on long journeys. Vitalizes body and mind.',
-    ingredients: 'Carbonated water, sucrose, glucose, citric acid, taurine (0.4%), sodium bicarbonate, magnesium carbonate, caffeine (0.03%), niacin, calcium pantothenate, pyridoxine HCl, vitamin B12, natural and artificial flavors, colors',
-    nutritionalInfo: {
-      servingSize: '250ml',
-      calories: 110,
-      sugar: '27g',
-      sodium: '105mg'
-    },
-    volume: '250ml',
-    brand: 'Red Bull GmbH'
-  },
-  
-  // Juices
-  { 
-    id: 'orange-juice', 
-    name: 'Minute Maid Orange', 
-    category: 'juice', 
-    price: 80, 
-    image: '/images/orange-juice.jpg',
-    description: 'Fresh-squeezed taste with no added sugar. Made from 100% pure orange juice with the natural goodness of real oranges. Rich in Vitamin C for a healthy immune system.',
-    ingredients: 'Orange juice from concentrate, water, natural flavors, vitamin C (ascorbic acid)',
-    nutritionalInfo: {
-      servingSize: '300ml',
-      calories: 120,
-      sugar: '22g (naturally occurring)',
-      sodium: '5mg'
-    },
-    volume: '300ml',
-    brand: 'The Coca-Cola Company'
-  },
-  { 
-    id: 'apple-juice', 
-    name: 'Apple Juice', 
-    category: 'juice', 
-    price: 80, 
-    image: '/images/apple-juice.jpg',
-    description: '100% pure apple juice made from fresh handpicked apples. No added sugar, no artificial flavors - just the pure, crisp taste of real apples. Great source of antioxidants.',
-    ingredients: 'Apple juice from concentrate, water, vitamin C (ascorbic acid)',
-    nutritionalInfo: {
-      servingSize: '300ml',
-      calories: 130,
-      sugar: '24g (naturally occurring)',
-      sodium: '10mg'
-    },
-    volume: '300ml',
-    brand: 'Fresh Harvest'
-  },
-  { 
-    id: 'lemonade', 
-    name: 'Fresh Lemonade', 
-    category: 'juice', 
-    price: 70, 
-    image: '/images/lemonade.jpg',
-    description: 'Refreshingly tangy and sweet homemade-style lemonade. Made with real lemon juice and just the right amount of sweetness. Perfect for hot Kenyan afternoons!',
-    ingredients: 'Water, lemon juice from concentrate (10%), sugar, natural lemon flavoring, citric acid, preservatives (sodium benzoate)',
-    nutritionalInfo: {
-      servingSize: '330ml',
-      calories: 100,
-      sugar: '25g',
-      sodium: '20mg'
-    },
-    volume: '330ml',
-    brand: 'Tropical Fresh'
-  },
-  { 
-    id: 'iced-tea', 
-    name: 'Iced Tea', 
-    category: 'juice', 
-    price: 60, 
-    image: '/images/iced-tea.jpg',
-    description: 'Smooth, refreshing iced tea with a hint of lemon. Brewed from real tea leaves and lightly sweetened for a perfectly balanced taste. Contains natural antioxidants.',
-    ingredients: 'Water, sugar, black tea extract, citric acid, natural lemon flavor, sodium benzoate (preservative)',
-    nutritionalInfo: {
-      servingSize: '330ml',
-      calories: 80,
-      sugar: '20g',
-      sodium: '25mg'
-    },
-    volume: '330ml',
-    brand: 'Lipton'
-  },
-  
-  // Water
-  { 
-    id: 'water', 
-    name: 'Mineral Water', 
-    category: 'water', 
-    price: 30, 
-    image: '/images/water.jpg',
-    description: 'Pure, crisp natural mineral water sourced from protected underground springs. Naturally filtered through layers of rock for purity. Essential minerals for optimal hydration.',
-    ingredients: 'Natural mineral water with naturally occurring minerals: calcium, magnesium, potassium',
-    nutritionalInfo: {
-      servingSize: '500ml',
-      calories: 0,
-      sugar: '0g',
-      sodium: '5mg'
-    },
-    volume: '500ml',
-    brand: 'Keringet'
-  },
-  { 
-    id: 'gatorade', 
-    name: 'Gatorade', 
-    category: 'water', 
-    price: 120, 
-    image: '/images/gatorade.jpg',
-    description: 'Scientifically formulated sports drink that helps you rehydrate, replenish and refuel. Contains critical electrolytes to help replace what you lose in sweat during athletic performance.',
-    ingredients: 'Water, sucrose, dextrose, citric acid, natural and artificial flavor, salt, sodium citrate, monopotassium phosphate, modified food starch, red 40',
-    nutritionalInfo: {
-      servingSize: '500ml',
-      calories: 140,
-      sugar: '34g',
-      sodium: '275mg'
-    },
-    volume: '500ml',
-    brand: 'PepsiCo'
-  },
-];
-
 export const productCategories: { id: ProductCategory; name: string }[] = [
   { id: 'sodas', name: 'Sodas' },
   { id: 'energy', name: 'Energy Drinks' },
@@ -294,7 +79,7 @@ export const branches: { id: Branch; name: string; location: string }[] = [
 ];
 
 // Initial mock inventory
-const createInitialInventory = (): Inventory[] => {
+const createInitialInventory = (products: Product[]): Inventory[] => {
   return branches.map(branch => ({
     branch: branch.id,
     products: products.reduce((acc, product) => {
@@ -304,42 +89,36 @@ const createInitialInventory = (): Inventory[] => {
   }));
 };
 
-// Mock orders for demo
-const mockOrders: Order[] = [
-  {
-    id: '1',
-    customerId: 'c1',
-    customerName: 'John Kamau',
-    branch: 'nairobi',
-    items: [{ product: products[0], quantity: 5 }],
-    total: 250,
-    status: 'paid',
-    mpesaCode: 'QK7B3N9P2M',
-    createdAt: new Date('2024-01-15T10:30:00'),
-  },
-  {
-    id: '2',
-    customerId: 'c2',
-    customerName: 'Mary Wanjiku',
-    branch: 'kisumu',
-    items: [{ product: products[1], quantity: 3 }, { product: products[2], quantity: 2 }],
-    total: 250,
-    status: 'paid',
-    mpesaCode: 'QK7B3N9P2N',
-    createdAt: new Date('2024-01-15T14:45:00'),
-  },
-  {
-    id: '3',
-    customerId: 'c3',
-    customerName: 'Peter Odhiambo',
-    branch: 'mombasa',
-    items: [{ product: products[0], quantity: 10 }],
-    total: 500,
-    status: 'paid',
-    mpesaCode: 'QK7B3N9P2O',
-    createdAt: new Date('2024-01-16T09:15:00'),
-  },
-];
+// Helper to transform backend order to frontend format
+const transformOrder = (backendOrder: any): Order => {
+  return {
+    id: backendOrder.id,
+    customerId: backendOrder.user_id,
+    customerName: backendOrder.users?.name || 'Unknown',
+    branch: backendOrder.branch,
+    deliveryAddress: backendOrder.delivery_address,
+    deliveryLocation: backendOrder.delivery_location,
+    items: backendOrder.order_items?.map((item: any) => ({
+      product: {
+        id: item.products.id,
+        name: item.products.name,
+        category: item.products.category,
+        price: item.products.price,
+        image: item.products.image,
+        description: item.products.description,
+        ingredients: item.products.ingredients,
+        nutritionalInfo: item.products.nutritional_info,
+        volume: item.products.volume,
+        brand: item.products.brand,
+      },
+      quantity: item.quantity,
+    })) || [],
+    total: backendOrder.total,
+    status: backendOrder.status,
+    mpesaCode: backendOrder.mpesa_code,
+    createdAt: new Date(backendOrder.created_at),
+  };
+};
 
 // Store
 interface AppState {
@@ -349,6 +128,13 @@ interface AppState {
   login: (user: User) => void;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => void;
+
+  // Products
+  products: Product[];
+  productsLoading: boolean;
+  productsError: string | null;
+  fetchProducts: () => Promise<void>;
+  getProductById: (id: string) => Product | undefined;
 
   // Branch
   selectedBranch: Branch;
@@ -366,8 +152,12 @@ interface AppState {
   clearCart: () => void;
   getCartTotal: () => number;
 
-  // Orders (mock data for frontend)
+  // Orders
   orders: Order[];
+  ordersLoading: boolean;
+  ordersError: string | null;
+  fetchOrders: () => Promise<void>;
+  fetchAllOrders: () => Promise<void>;
   addOrder: (order: Order) => void;
 
   // Inventory (mock data for frontend)
@@ -378,11 +168,6 @@ interface AppState {
   redirectAfterLogin: string | null;
   setRedirectAfterLogin: (path: string | null) => void;
 }
-
-// Helper function to get product by ID
-export const getProductById = (id: string): Product | undefined => {
-  return products.find(p => p.id === id);
-};
 
 export const useStore = create<AppState>()(
   persist(
@@ -400,6 +185,32 @@ export const useStore = create<AppState>()(
         if (currentUser) {
           set({ user: { ...currentUser, ...updates } });
         }
+      },
+
+      // Products
+      products: [],
+      productsLoading: false,
+      productsError: null,
+      fetchProducts: async () => {
+        set({ productsLoading: true, productsError: null });
+        try {
+          const response = await productsApi.getAll();
+          const products = response.products;
+          set({ 
+            products, 
+            productsLoading: false,
+            // Initialize inventory when products are loaded
+            inventory: createInitialInventory(products)
+          });
+        } catch (error) {
+          set({ 
+            productsError: error instanceof Error ? error.message : 'Failed to fetch products',
+            productsLoading: false 
+          });
+        }
+      },
+      getProductById: (id: string) => {
+        return get().products.find(p => p.id === id);
       },
 
       // Branch
@@ -447,11 +258,39 @@ export const useStore = create<AppState>()(
       },
 
       // Orders
-      orders: mockOrders,
+      orders: [],
+      ordersLoading: false,
+      ordersError: null,
+      fetchOrders: async () => {
+        set({ ordersLoading: true, ordersError: null });
+        try {
+          const response = await ordersApi.getMyOrders();
+          const orders = response.orders.map(transformOrder);
+          set({ orders, ordersLoading: false });
+        } catch (error) {
+          set({ 
+            ordersError: error instanceof Error ? error.message : 'Failed to fetch orders',
+            ordersLoading: false 
+          });
+        }
+      },
+      fetchAllOrders: async () => {
+        set({ ordersLoading: true, ordersError: null });
+        try {
+          const response = await ordersApi.getAllOrders();
+          const orders = response.orders.map(transformOrder);
+          set({ orders, ordersLoading: false });
+        } catch (error) {
+          set({ 
+            ordersError: error instanceof Error ? error.message : 'Failed to fetch orders',
+            ordersLoading: false 
+          });
+        }
+      },
       addOrder: (order) => set({ orders: [order, ...get().orders] }),
 
       // Inventory
-      inventory: createInitialInventory(),
+      inventory: [],
       restockBranch: (branch, productId, quantity) => {
         const inventory = get().inventory;
         const hqInventory = inventory.find(i => i.branch === 'nairobi');

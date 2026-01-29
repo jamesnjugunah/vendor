@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useStore, products, branches, Branch } from '@/lib/store';
+import { useStore, branches, Branch } from '@/lib/store';
 import { ArrowLeft, Package, Truck, CheckCircle, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -20,13 +20,20 @@ import { StatusBadge } from '@/components/StatusBadge';
 
 const Restock = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout, inventory, restockBranch } = useStore();
+  const { user, isAuthenticated, logout, inventory, restockBranch, products, fetchProducts } = useStore();
   const [selectedBranch, setSelectedBranch] = useState<Branch | ''>('');
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [restockHistory, setRestockHistory] = useState<
     { branch: string; product: string; quantity: number; time: Date }[]
   >([]);
+
+  // Fetch products on mount
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts();
+    }
+  }, [fetchProducts, products.length]);
 
   // Redirect if not admin
   if (!isAuthenticated || user?.role !== 'admin') {

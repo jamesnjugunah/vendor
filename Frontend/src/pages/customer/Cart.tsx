@@ -9,6 +9,7 @@ import { useStore, branches } from '@/lib/store';
 import { ArrowLeft, Minus, Plus, Trash2, Phone, Loader2, CheckCircle, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import DeliveryAddressInput from '@/components/DeliveryAddressInput';
+import { ordersApi, paymentsApi } from '@/lib/api';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -61,31 +62,55 @@ const Cart = () => {
     setIsProcessing(true);
     setPaymentStep('payment');
 
-    // Simulate M-Pesa STK Push
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      // Create order in backend
+      const orderData = {
+        branch: selectedBranch,
+        delivery_address: deliveryAddress,
+        items: cart.map(item => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+      };
 
-    // Generate mock M-Pesa confirmation code
-    const code = 'QK' + Math.random().toString(36).substring(2, 10).toUpperCase();
-    setMpesaCode(code);
+      const { order } = await ordersApi.create(orderData);
 
-    // Create order
-    const order = {
-      id: Date.now().toString(),
-      customerId: user!.id,
-      customerName: user!.name,
-      branch: selectedBranch,
-      deliveryAddress: deliveryAddress,
-      items: cart,
-      total: getCartTotal(),
-      status: 'paid' as const,
-      mpesaCode: code,
-      createdAt: new Date(),
-    };
+      // Simulate M-Pesa STK Push (in real implementation, use paymentsApi.initiateSTKPush)
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    addOrder(order);
-    clearCart();
-    setPaymentStep('success');
-    setIsProcessing(false);
+      // Generate mock M-Pesa confirmation code
+      const code = 'QK' + Math.random().toString(36).substring(2, 10).toUpperCase();
+      setMpesaCode(code);
+
+      // Note: In real implementation, the order status would be updated to 'paid' 
+      // by the M-Pesa callback/webhook after successful payment verification.
+      // For now, we'll just show success with the pending order.
+
+      // Add order to local state for immediate UI update
+      const localOrder = {
+        id: order.id,
+        customerId: order.user_id,
+        customerName: user!.name,
+        branch: order.branch,
+        deliveryAddress: order.delivery_address,
+        deliveryLocation: order.delivery_location,
+        items: cart,
+        total: order.total,
+        status: 'paid' as const, // Display as paid in UI for demo purposes
+        mpesaCode: code,
+        createdAt: new Date(order.created_at),
+      };
+      
+      addOrder(localOrder);
+      clearCart();
+      setPaymentStep('success');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create order');
+      setPaymentStep('cart');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (paymentStep === 'success') {
@@ -240,10 +265,10 @@ const Cart = () => {
                 <DeliveryAddressInput
                   value={deliveryAddress}
                   onChange={setDeliveryAddress}
-                  selectedBranch={currentBranch!}
+                  selectedBranch={currentBranch!.id}
                   onValidationChange={setIsLocationValid}
                   onBranchSwitch={(branch) => {
-                    setBranch(branch.id);
+                    setBranch(branch);
                   }}
                 />
 

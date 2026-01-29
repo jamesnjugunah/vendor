@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useStore, products, branches, Branch, productCategories, ProductCategory } from '@/lib/store';
+import { useStore, branches, Branch, productCategories, ProductCategory } from '@/lib/store';
 import { ShoppingCart, Plus, Minus, MapPin, LogOut, User, Star, Flame, TrendingUp, Tag, Search, X, Moon, Sun } from 'lucide-react';
 
 const Shop = () => {
@@ -33,10 +33,20 @@ const Shop = () => {
     updateQuantity,
     getCartTotal,
     inventory,
+    products,
+    productsLoading,
+    fetchProducts,
   } = useStore();
 
   const currentBranch = branches.find((b) => b.id === selectedBranch);
   const branchInventory = inventory.find((i) => i.branch === selectedBranch);
+
+  // Fetch products on mount
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts();
+    }
+  }, [fetchProducts, products.length]);
 
   // Theme classes
   const theme = {
