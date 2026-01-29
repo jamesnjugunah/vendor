@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { supabase } from '../config/database';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Get inventory for a branch
-router.get('/:branch', async (req, res) => {
+router.get('/:branch', async (req: Request, res: Response) => {
   try {
     const { data: inventory, error } = await supabase
       .from('inventory')
@@ -24,7 +24,7 @@ router.get('/:branch', async (req, res) => {
 });
 
 // Restock branch (admin only)
-router.post('/restock', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.post('/restock', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { from_branch, to_branch, product_id, quantity } = req.body;
 
@@ -99,7 +99,7 @@ router.post('/restock', authenticate, requireAdmin, async (req: AuthRequest, res
 });
 
 // Update inventory quantity (admin only)
-router.put('/:branch/:product_id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.put('/:branch/:product_id', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { branch, product_id } = req.params;
     const { quantity } = req.body;

@@ -1,13 +1,13 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { supabase } from '../config/database';
 import { authenticate, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', async (req: Request, res: Response) => {
   try {
     const { name, email, phone, password } = req.body;
 
@@ -46,10 +46,11 @@ router.post('/register', async (req, res) => {
     if (error) throw error;
 
     // Generate token
+    const secret = process.env.JWT_SECRET || 'fallback-secret';
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      secret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as SignOptions
     );
 
     res.status(201).json({ user, token });
@@ -60,7 +61,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -87,10 +88,11 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate token
+    const secret = process.env.JWT_SECRET || 'fallback-secret';
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      secret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as SignOptions
     );
    
 
@@ -105,7 +107,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Get current user
-router.get('/me', authenticate, async (req: AuthRequest, res) => {
+router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { data: user, error } = await supabase
       .from('users')
@@ -122,7 +124,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Update profile
-router.put('/profile', authenticate, async (req: AuthRequest, res) => {
+router.put('/profile', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { name, phone } = req.body;
     const updates: any = {};

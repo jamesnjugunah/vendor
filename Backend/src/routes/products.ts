@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { supabase } from '../config/database';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Get all products (public)
-router.get('/', async (req, res) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const { category, search } = req.query;
 
@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get single product (public)
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { data: product, error } = await supabase
       .from('products')
@@ -51,7 +51,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create product (admin only)
-router.post('/new', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.post('/new', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { name, category, price, image, description, ingredients, nutritional_info, volume, brand } = req.body;
 
@@ -84,7 +84,7 @@ router.post('/new', authenticate, requireAdmin, async (req: AuthRequest, res) =>
 });
 
 // Update product (admin only)
-router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { name, category, price, image, description, ingredients, nutritional_info, volume, brand } = req.body;
 
@@ -115,7 +115,7 @@ router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => 
 });
 
 // Delete product (admin only)
-router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { error } = await supabase
       .from('products')
