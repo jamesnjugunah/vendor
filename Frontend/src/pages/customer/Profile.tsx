@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,12 +11,19 @@ import { toast } from 'sonner';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, updateProfile, logout, orders, selectedBranch } = useStore();
+  const { user, isAuthenticated, updateProfile, logout, orders, selectedBranch, fetchOrders } = useStore();
   
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [isEditing, setIsEditing] = useState(false);
+
+  // Fetch user orders on mount
+  useEffect(() => {
+    if (orders.length === 0 && user) {
+      fetchOrders();
+    }
+  }, [fetchOrders, orders.length, user]);
 
   if (!isAuthenticated || !user) {
     navigate('/login');

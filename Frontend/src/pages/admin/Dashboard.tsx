@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useStore, products, branches } from '@/lib/store';
+import { useStore, branches } from '@/lib/store';
 import {
   LogOut,
   Package,
@@ -34,7 +34,21 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { density, setDensity, getRowClass, getCellPadding } = useTableDensity();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout, orders, inventory } = useStore();
+  const { user, isAuthenticated, logout, orders, inventory, products, fetchProducts, fetchAllOrders } = useStore();
+
+  // Fetch products on mount
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts();
+    }
+  }, [fetchProducts, products.length]);
+
+  // Fetch all orders on mount (admin can see all orders)
+  useEffect(() => {
+    if (orders.length === 0 && user?.role === 'admin') {
+      fetchAllOrders();
+    }
+  }, [fetchAllOrders, orders.length, user?.role]);
 
   // Redirect if not admin
   if (!isAuthenticated || user?.role !== 'admin') {

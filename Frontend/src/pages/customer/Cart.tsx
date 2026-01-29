@@ -9,6 +9,7 @@ import { useStore, branches } from '@/lib/store';
 import { ArrowLeft, Minus, Plus, Trash2, Phone, Loader2, CheckCircle, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import DeliveryAddressInput from '@/components/DeliveryAddressInput';
+import { ordersApi, paymentsApi } from '@/lib/api';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -61,31 +62,95 @@ const Cart = () => {
     setIsProcessing(true);
     setPaymentStep('payment');
 
-    // Simulate M-Pesa STK Push
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      // Create order in backend
+      const orderData = {
+        branch: selectedBranch,
+        delivery_address: deliveryAddress,
+        items: cart.map(item => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+      };
 
-    // Generate mock M-Pesa confirmation code
-    const code = 'QK' + Math.random().toString(36).substring(2, 10).toUpperCase();
-    setMpesaCode(code);
+      const { order } = await ordersApi.create(orderData);
 
-    // Create order
-    const order = {
-      id: Date.now().toString(),
-      customerId: user!.id,
-      customerName: user!.name,
-      branch: selectedBranch,
-      deliveryAddress: deliveryAddress,
-      items: cart,
-      total: getCartTotal(),
-      status: 'paid' as const,
-      mpesaCode: code,
-      createdAt: new Date(),
-    };
+      // Initiate M-Pesa STK Push
+      const { checkoutRequestId, merchantRequestId } = await paymentsApi.initiateSTKPush(
+        order.id,
+        phoneNumber
+      );
 
-    addOrder(order);
-    clearCart();
-    setPaymentStep('success');
-    setIsProcessing(false);
+      toast.success('Check your phone for M-Pesa prompt');
+
+      // Poll for payment status (check every 3 seconds for up to 60 seconds)
+      let attempts = 0;
+      const maxAttempts = 20;
+      const pollInterval = 3000;
+
+      const checkPaymentStatus = async (): Promise<boolean> => {
+        try {
+          const response = await paymentsApi.queryTransaction(checkoutRequestId);
+          const result = response.result;
+          
+          if (result.ResultCode === '0') {
+            // Payment successful
+            setMpesaCode(result.MpesaReceiptNumber || checkoutRequestId);
+            return true;
+          } else if (result.ResultCode) {
+            // Payment failed
+            throw new Error(result.ResultDesc || 'Payment failed');
+          }
+          // Still pending, continue polling
+          return false;
+        } catch (error) {
+          console.error('Payment status check error:', error);
+          return false;
+        }
+      };
+
+      // Poll for status
+      while (attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        
+        const isComplete = await checkPaymentStatus();
+        if (isComplete) {
+          // Fetch updated order from backend
+          const { order: updatedOrder } = await ordersApi.getById(order.id);
+          
+          // Add order to local state
+          const localOrder = {
+            id: updatedOrder.id,
+            customerId: updatedOrder.user_id,
+            customerName: user!.name,
+            branch: updatedOrder.branch,
+            deliveryAddress: updatedOrder.delivery_address,
+            deliveryLocation: updatedOrder.delivery_location,
+            items: cart,
+            total: updatedOrder.total,
+            status: 'paid' as const,
+            mpesaCode: updatedOrder.mpesa_code,
+            createdAt: new Date(updatedOrder.created_at),
+          };
+          
+          addOrder(localOrder);
+          clearCart();
+          setPaymentStep('success');
+          return;
+        }
+        
+        attempts++;
+      }
+
+      // Timeout - payment still pending
+      throw new Error('Payment timeout. Please check your order status in your profile.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to process payment');
+      setPaymentStep('cart');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (paymentStep === 'success') {
@@ -240,10 +305,10 @@ const Cart = () => {
                 <DeliveryAddressInput
                   value={deliveryAddress}
                   onChange={setDeliveryAddress}
-                  selectedBranch={currentBranch!}
+                  selectedBranch={currentBranch!.id}
                   onValidationChange={setIsLocationValid}
                   onBranchSwitch={(branch) => {
-                    setBranch(branch.id);
+                    setBranch(branch);
                   }}
                 />
 
