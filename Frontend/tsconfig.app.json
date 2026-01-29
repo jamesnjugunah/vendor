@@ -27,5 +27,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "server/conserver/middlewserver/rouserver/services, "routes", "services"]
+  "include": ["src", "server/conserver/middlewserver/rouserver/services", "routes", "services"]
 }
