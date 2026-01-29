@@ -1,4 +1,9 @@
 import serverless from "serverless-http";
-import app from "../server/server"; 
 
-export default serverless(app);
+// Dynamic import to ensure proper bundling
+async function handler(req: any, res: any) {
+  const { default: app } = await import("../server/server");
+  return serverless(app)(req, res);
+}
+
+export default handler;
