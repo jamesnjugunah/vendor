@@ -76,37 +76,77 @@ const Cart = () => {
 
       const { order } = await ordersApi.create(orderData);
 
-      // Simulate M-Pesa STK Push (in real implementation, use paymentsApi.initiateSTKPush)
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // Initiate M-Pesa STK Push
+      const { checkoutRequestId, merchantRequestId } = await paymentsApi.initiateSTKPush(
+        order.id,
+        phoneNumber
+      );
 
-      // Generate mock M-Pesa confirmation code
-      const code = 'QK' + Math.random().toString(36).substring(2, 10).toUpperCase();
-      setMpesaCode(code);
+      toast.success('Check your phone for M-Pesa prompt');
 
-      // Note: In real implementation, the order status would be updated to 'paid' 
-      // by the M-Pesa callback/webhook after successful payment verification.
-      // For now, we'll just show success with the pending order.
+      // Poll for payment status (check every 3 seconds for up to 60 seconds)
+      let attempts = 0;
+      const maxAttempts = 20;
+      const pollInterval = 3000;
 
-      // Add order to local state for immediate UI update
-      const localOrder = {
-        id: order.id,
-        customerId: order.user_id,
-        customerName: user!.name,
-        branch: order.branch,
-        deliveryAddress: order.delivery_address,
-        deliveryLocation: order.delivery_location,
-        items: cart,
-        total: order.total,
-        status: 'paid' as const, // Display as paid in UI for demo purposes
-        mpesaCode: code,
-        createdAt: new Date(order.created_at),
+      const checkPaymentStatus = async (): Promise<boolean> => {
+        try {
+          const response = await paymentsApi.queryTransaction(checkoutRequestId);
+          const result = response.result;
+          
+          if (result.ResultCode === '0') {
+            // Payment successful
+            setMpesaCode(result.MpesaReceiptNumber || checkoutRequestId);
+            return true;
+          } else if (result.ResultCode) {
+            // Payment failed
+            throw new Error(result.ResultDesc || 'Payment failed');
+          }
+          // Still pending, continue polling
+          return false;
+        } catch (error) {
+          console.error('Payment status check error:', error);
+          return false;
+        }
       };
-      
-      addOrder(localOrder);
-      clearCart();
-      setPaymentStep('success');
+
+      // Poll for status
+      while (attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        
+        const isComplete = await checkPaymentStatus();
+        if (isComplete) {
+          // Fetch updated order from backend
+          const { order: updatedOrder } = await ordersApi.getById(order.id);
+          
+          // Add order to local state
+          const localOrder = {
+            id: updatedOrder.id,
+            customerId: updatedOrder.user_id,
+            customerName: user!.name,
+            branch: updatedOrder.branch,
+            deliveryAddress: updatedOrder.delivery_address,
+            deliveryLocation: updatedOrder.delivery_location,
+            items: cart,
+            total: updatedOrder.total,
+            status: 'paid' as const,
+            mpesaCode: updatedOrder.mpesa_code,
+            createdAt: new Date(updatedOrder.created_at),
+          };
+          
+          addOrder(localOrder);
+          clearCart();
+          setPaymentStep('success');
+          return;
+        }
+        
+        attempts++;
+      }
+
+      // Timeout - payment still pending
+      throw new Error('Payment timeout. Please check your order status in your profile.');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create order');
+      toast.error(error instanceof Error ? error.message : 'Failed to process payment');
       setPaymentStep('cart');
     } finally {
       setIsProcessing(false);
