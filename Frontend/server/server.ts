@@ -36,5 +36,5 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 // Error handling
 app.use(errorHandler);
 
-// ✅ IMPORTANT: Export app instead of listening
+
 export default app;
