@@ -1,6 +1,4 @@
 import serverless from "serverless-http";
-import app from "../server/server";
+import app from "../dist-server/server/server.js";
 
-const handler = serverless(app);
-
-export default handler;
+export default serverless(app);
