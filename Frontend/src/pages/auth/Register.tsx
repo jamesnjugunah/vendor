@@ -8,6 +8,7 @@ import { useStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import logo from '../../assets/images/logo.png';
+import { authApi, setAuthToken } from '@/lib/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -36,21 +37,33 @@ const Register = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Format phone number
+      const phone = formData.phone.startsWith('07') 
+        ? '+254' + formData.phone.slice(1) 
+        : formData.phone;
 
-    // Mock registration
-    login({
-      id: 'user-' + Date.now(),
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone.startsWith('07') ? '+254' + formData.phone.slice(1) : formData.phone,
-      role: 'customer',
-    });
+      // Call backend API
+      const response = await authApi.register({
+        name: formData.name,
+        email: formData.email,
+        phone,
+        password: formData.password,
+      });
+      
+      // Store token
+      setAuthToken(response.token);
+      
+      // Update store with user data
+      login(response.user);
 
-    toast.success('Account created successfully!');
-    navigate('/shop');
-    setIsLoading(false);
+      toast.success('Account created successfully!');
+      navigate('/shop');
+    } catch (error: any) {
+      toast.error(error.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

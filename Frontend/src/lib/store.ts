@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { clearAuthToken } from './api';
 
 // Types
 export type Branch = 'nairobi' | 'kisumu' | 'mombasa' | 'nakuru' | 'eldoret';
@@ -390,7 +391,10 @@ export const useStore = create<AppState>()(
       user: null,
       isAuthenticated: false,
       login: (user) => set({ user, isAuthenticated: true }),
-      logout: () => set({ user: null, isAuthenticated: false, cart: [], deliveryAddress: '' }),
+      logout: () => {
+        clearAuthToken();
+        set({ user: null, isAuthenticated: false, cart: [], deliveryAddress: '' });
+      },
       updateProfile: (updates) => {
         const currentUser = get().user;
         if (currentUser) {
