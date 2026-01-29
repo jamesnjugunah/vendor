@@ -92,6 +92,7 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET!,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
+   
 
     // Return user without password
     const { password_hash, ...userWithoutPassword } = user;
