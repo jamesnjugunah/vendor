@@ -7,6 +7,7 @@ import orderRoutes from './routes/orders';
 import inventoryRoutes from './routes/inventory';
 import paymentRoutes from './routes/payments';
 import { errorHandler } from './middleware/errorHandler';
+import { startCleanupJob } from './jobs/cleanupPendingOrders';
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || 'http://localhost:8080',
   credentials: true,
 }));
 app.use(express.json());
@@ -39,4 +40,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Start the cleanup job for pending orders
+  startCleanupJob();
 });

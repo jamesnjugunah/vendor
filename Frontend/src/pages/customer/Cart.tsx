@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useStore, branches } from '@/lib/store';
-import { ArrowLeft, Minus, Plus, Trash2, Phone, Loader2, CheckCircle, MapPin } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Trash2, Phone, Loader2, CheckCircle, MapPin, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import DeliveryAddressInput from '@/components/DeliveryAddressInput';
 import { ordersApi, paymentsApi } from '@/lib/api';
@@ -243,8 +243,22 @@ const Cart = () => {
           <div className="space-y-6">
             {/* Cart Items */}
             <Card className="bg-white">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-gray-900">Items ({cart.reduce((sum, i) => sum + i.quantity, 0)})</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to clear your cart?')) {
+                      clearCart();
+                      toast.success('Cart cleared');
+                    }
+                  }}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Clear Cart
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 {cart.map((item) => (
