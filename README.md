@@ -1,197 +1,199 @@
-# Distributed Supermarket Chain Web Application
+# 🛒 FreshMart - Distributed Supermarket Chain
 
-## Project Overview
+> Full-stack e-commerce application with Express backend, React frontend, Supabase database, and M-Pesa payment integration.
 
-A distributed web application for managing a supermarket chain with a headquarters in Nairobi and four branches across Kenya (Kisumu, Mombasa, Nakuru, and Eldoret). The system enables seamless business operations including customer purchases, inventory management, and sales reporting across all locations.
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
+[![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white)](https://expressjs.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com/)
 
-## Business Context
+## 📖 Project Overview
 
-The supermarket chain sells soft drinks (Coke, Fanta, and Sprite) at uniform prices across all branches. The headquarters manages restocking for all locations, while customers can purchase from any branch. The system provides real-time sales tracking and comprehensive reporting capabilities.
+A distributed web application for managing a supermarket chain with headquarters in Nairobi and four branches across Kenya (Kisumu, Mombasa, Nakuru, Eldoret). The system enables customer purchases, inventory management, sales reporting, and M-Pesa payment integration.
 
-## Key Features
+## 🚀 Quick Start
 
-### Customer Features
-- User registration and authentication
-- Browse available drinks at any branch
-- Purchase drinks with real-time inventory updates
-- M-Pesa payment integration via sandbox API
+**Get started in 5 minutes** → See [QUICKSTART.md](QUICKSTART.md)
+
+```bash
+# 1. Install dependencies
+npm run install:all
+
+# 2. Set up Supabase (follow QUICKSTART.md)
+
+# 3. Configure .env files (Backend & Frontend)
+
+# 4. Start both servers
+npm run dev
+```
+
+## ✨ Features
+
+### 👥 Customer Features
+- User registration and authentication with JWT
+- Browse products by category (Sodas, Energy Drinks, Juice, Water)
+- Shopping cart with real-time updates
 - Multi-branch support
+- Delivery address with location pin
+- M-Pesa STK Push payment integration
+- Order history and tracking
 
-### Admin Features
+### 🔐 Admin Features
 - Centralized inventory management
 - Restock branches from headquarters
-- Comprehensive sales reporting including:
-  - Sales by drink brand (Coke, Fanta, Sprite)
-  - Revenue generated per brand
-  - Grand total revenue across all branches
-  - Branch-wise sales breakdown
+- Product CRUD operations
+- Order management across all branches
+- Comprehensive sales reporting:
+  - Sales by product and category
+  - Revenue by branch
+  - Order status tracking
+  - Real-time dashboard
 
-## System Architecture
+## 🏗️ Architecture
 
-### Locations
-- **Headquarters**: Nairobi (manages inventory distribution)
-- **Branches**: 
-  - Kisumu
-  - Mombasa
-  - Nakuru
-  - Eldoret
-
-### Product Catalog
-- Coke
-- Fanta
-- Sprite
-
-All drinks maintain consistent pricing across all locations.
-
-## Technical Requirements
-
-### Demonstration Setup
-The system demonstration requires **four devices**:
-
-1. **Admin Device**: Used by the administrator for:
-   - Restocking operations
-   - Viewing sales reports
-   - Managing inventory
-
-2. **Customer Devices (3)**: Used by customers for:
-   - Independent login sessions
-   - Purchasing from different branches
-   - Making M-Pesa payments
-
-### Payment Integration
-- M-Pesa Sandbox API integration
-- Real payment processing during purchases
-- Transaction verification and confirmation
-
-## Core Functionality
-
-### User Management
-- Customer registration with unique credentials
-- Secure login system
-- Role-based access (Customer/Admin)
-
-### Inventory Management
-- Centralized stock control from headquarters
-- Branch-specific inventory tracking
-- Automated stock updates after sales
-- Restocking workflow from HQ to branches
-
-### Sales System
-- Real-time purchase processing
-- Branch-specific transactions
-- Payment gateway integration
-- Receipt generation
-
-### Reporting
-- Sales by brand across all locations
-- Revenue analytics per drink type
-- Aggregated financial reports
-- Real-time dashboard updates
-
-## Distributed System Features
-
-- Multi-branch operation support
-- Synchronized inventory across locations
-- Concurrent customer transactions
-- Centralized data aggregation
-- Real-time updates across all branches
-
-## Installation & Setup
-
-### Prerequisites
-- Web server (Apache/Nginx)
-- Database server (MySQL/PostgreSQL)
-- PHP 7.4+ or Node.js 14+
-- M-Pesa Sandbox credentials
-- SSL certificate for secure transactions
-
-### Configuration Steps
-1. Clone the repository
-2. Configure database connection
-3. Set up M-Pesa API credentials
-4. Initialize branch locations
-5. Create admin account
-6. Seed initial inventory data
-
-### Environment Variables
 ```
-DB_HOST=localhost
-DB_NAME=supermarket_db
-DB_USER=your_username
-DB_PASS=your_password
-
-MPESA_CONSUMER_KEY=your_consumer_key
-MPESA_CONSUMER_SECRET=your_consumer_secret
-MPESA_PASSKEY=your_passkey
-MPESA_SHORTCODE=your_shortcode
+┌─────────────────────────────────────────────────────────┐
+│                      Frontend (React)                    │
+│  - Vite + TypeScript + TailwindCSS + shadcn/ui          │
+│  - Zustand State Management                              │
+└─────────────────┬───────────────────────────────────────┘
+                  │ REST API
+┌─────────────────▼───────────────────────────────────────┐
+│                  Backend (Express + TS)                  │
+│  - JWT Authentication                                    │
+│  - RESTful API                                           │
+│  - M-Pesa Integration                                    │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────────────────┐
+│                  Database (Supabase)                     │
+│  - PostgreSQL with Row Level Security                   │
+│  - Real-time subscriptions ready                        │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## Usage
+### 📍 Branch Locations
+- **Headquarters**: Nairobi (main inventory hub)
+- **Branches**: Kisumu, Mombasa, Nakuru, Eldoret
 
-### For Customers
-1. Register a new account or log in
-2. Select a branch location
-3. Browse available drinks
-4. Add items to cart
-5. Proceed to checkout
-6. Complete payment via M-Pesa
-7. Receive confirmation
+### 📦 Product Categories
+- Sodas (Coca-Cola, Fanta, Sprite, Pepsi)
+- Energy Drinks (Monster, Red Bull)
+- Juices (Orange, Apple, Lemonade, Iced Tea)
+- Water & Sports Drinks (Mineral Water, Gatorade)
 
-### For Admin
-1. Log in with admin credentials
-2. View current inventory across branches
-3. Initiate restocking for specific branches
-4. Access sales reports dashboard
-5. Generate financial summaries
-6. Monitor real-time transactions
+## 🛠️ Tech Stack
 
-## Demonstration Protocol
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Language**: TypeScript
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: JWT + bcrypt
+- **Validation**: Zod
+- **Payment**: M-Pesa Daraja API
 
-### Setup
-- Prepare four devices (1 admin + 3 customer devices)
-- Ensure all devices are connected to the network
-- Verify M-Pesa sandbox connectivity
+### Frontend
+- **Framework**: React 18 + Vite
+- **Language**: TypeScript
+- **Styling**: TailwindCSS
+- **UI Components**: shadcn/ui
+- **State**: Zustand with persistence
+- **Routing**: React Router v6
+- **Forms**: React Hook Form
 
-### Execution
-1. Admin logs in on Device 1
-2. Customers log in on Devices 2, 3, and 4 from different branches
-3. Each customer makes independent purchases
-4. Customers complete actual M-Pesa payments
-5. Admin views updated sales report reflecting all transactions
+### DevOps
+- **Package Manager**: npm / bun
+- **Build Tool**: Vite (Frontend) + tsc (Backend)
+- **Environment**: dotenv
 
-## Security Considerations
+## 📁 Project Structure
 
-- Secure password storage (hashing)
-- Session management
-- SQL injection prevention
-- XSS protection
-- CSRF token implementation
-- Secure API communication
-- Transaction logging
+```
+vendor/
+├── Backend/                     # Express API Server
+│   ├── src/
+│   │   ├── config/             # Database, env configs
+│   │   ├── middleware/         # Auth, error handling
+│   │   ├── routes/             # API endpoints
+│   │   ├── services/           # Business logic
+│   │   └── server.ts           # Entry point
+│   ├── database/
+│   │   ├── schema.sql          # Database migration
+│   │   └── SETUP.md            # DB setup guide
+│   └── README.md
+│
+├── Frontend/                    # React Application
+│   ├── src/
+│   │   ├── components/         # UI components
+│   │   ├── pages/              # Route pages
+│   │   ├── lib/
+│   │   │   ├── api.ts         # API client
+│   │   │   └── store.ts       # State management
+│   │   └── App.tsx
+│   └── vite.config.ts
+│
+├── QUICKSTART.md               # 5-minute setup guide
+├── FULLSTACK_SETUP.md          # Detailed guide
+└── README.md                   # This file
+```
 
-## Future Enhancements
+## 🚀 Quick Start
 
-- Mobile application support
-- Advanced analytics and forecasting
-- Loyalty program integration
-- Promotional campaigns management
-- Multi-currency support
-- Delivery service integration
-- Customer order history
-- Automated reordering system
+```bash
+# 1. Install all dependencies
+npm run install:all
 
-## Support & Maintenance
+# 2. Set up Supabase database (see QUICKSTART.md)
 
-### Database Backup
-Regular automated backups of transaction and inventory data
+# 3. Configure environment variables
+cd Backend && cp .env.example .env
+cd ../Frontend && cp .env.example .env
 
-### System Monitoring
-- Server uptime monitoring
-- Transaction logging
-- Error tracking
-- Performance metrics
+# 4. Start both servers
+npm run dev
+```
 
-## License
+**Detailed guide**: See [QUICKSTART.md](QUICKSTART.md)
+
+## 🔐 Default Credentials
+
+**Admin:**
+- Email: `admin@freshmart.co.ke`
+- Password: `admin123`
+
+## 💳 M-Pesa Integration
+
+- Supports STK Push for seamless payments
+- Webhook callback for transaction verification
+- Sandbox and production modes
+- See [Backend/README.md](Backend/README.md) for setup
+
+## 📚 Documentation
+
+- [**Quick Start**](QUICKSTART.md) - 5-minute setup
+- [**Full Setup Guide**](FULLSTACK_SETUP.md) - Detailed instructions
+- [**Backend API**](Backend/README.md) - API documentation
+- [**Database Setup**](Backend/database/SETUP.md) - Database guide
+
+## 🚀 Deployment
+
+### Backend
+- Deploy to Railway, Render, or Heroku
+- Set environment variables in platform
+- Database hosted on Supabase
+
+### Frontend
+- Deploy to Vercel or Netlify
+- Set `VITE_API_URL` to production backend
+
+## 📄 License
+
+MIT
+
+---
+
+**Built with ❤️ in Kenya 🇰🇪**
 
 [Specify your license here]
 
