@@ -47,10 +47,14 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
     if (itemsError) throw itemsError;
 
     res.status(201).json({ order });
-  } catch (error) {
-    console.error('Create order error:', error);
-    res.status(500).json({ error: 'Failed to create order' });
-  }
+  } catch (error: any) {
+  console.error('Create order error:', error);
+  res.status(500).json({
+    error: 'Failed to create order',
+    details: error?.message || error
+  });
+}
+
 });
 
 // Get user's orders

@@ -94,6 +94,7 @@ router.post('/login', async (req: Request, res: Response) => {
       secret,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as SignOptions
     );
+   
 
     // Return user without password
     const { password_hash, ...userWithoutPassword } = user;
