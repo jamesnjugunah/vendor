@@ -80,6 +80,12 @@ router.post('/mpesa/callback', async (req: Request, res: Response) => {
       return res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
     }
 
+    // Don't update cancelled orders
+    if (order.status === 'cancelled') {
+      console.log(`Order ${order.id} was cancelled, ignoring payment callback`);
+      return res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+    }
+
     // Update order based on result
     if (ResultCode === 0) {
       // Payment successful

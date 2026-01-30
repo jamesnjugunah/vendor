@@ -5,9 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { useStore, branches } from '@/lib/store';
-import { ArrowLeft, User, Mail, Phone, MapPin, ShoppingBag, Save, LogOut } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, ShoppingBag, Save, LogOut, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { paymentsApi, ordersApi } from '@/lib/api';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ const Profile = () => {
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [retryingOrderId, setRetryingOrderId] = useState<string | null>(null);
 
   // Fetch user orders on mount
   useEffect(() => {
@@ -48,6 +51,59 @@ const Profile = () => {
     logout();
     toast.success('Signed out successfully');
     navigate('/');
+  };
+
+  const handleRetryPayment = async (orderId: string, orderTotal: number) => {
+    setRetryingOrderId(orderId);
+    try {
+      // Get user's phone number
+      const phoneNumber = user?.phone || '';
+      if (!phoneNumber || phoneNumber.length < 10) {
+        toast.error('Please update your phone number in profile first');
+        return;
+      }
+
+      // Initiate M-Pesa STK Push
+      const { checkoutRequestId } = await paymentsApi.initiateSTKPush(orderId, phoneNumber);
+      toast.success('Payment request sent to your phone. Please complete the payment.');
+
+      // Poll for payment status
+      const maxAttempts = 20;
+      const pollInterval = 3000;
+      let attempts = 0;
+
+      const checkPaymentStatus = async (): Promise<boolean> => {
+        try {
+          const result = await paymentsApi.queryTransaction(checkoutRequestId);
+          if (result.result.ResultCode === '0') {
+            return true;
+          } else if (result.result.ResultCode) {
+            throw new Error(result.result.ResultDesc || 'Payment failed');
+          }
+          return false;
+        } catch (error) {
+          console.error('Payment status check error:', error);
+          return false;
+        }
+      };
+
+      while (attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        const isComplete = await checkPaymentStatus();
+        if (isComplete) {
+          toast.success('Payment successful!');
+          await fetchOrders();
+          return;
+        }
+        attempts++;
+      }
+
+      toast.error('Payment timeout. Please try again.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to process payment');
+    } finally {
+      setRetryingOrderId(null);
+    }
   };
 
   return (
@@ -221,20 +277,42 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {userOrders.slice(0, 5).map((order) => (
+                  {userOrders.slice(0, 10).map((order) => (
                     <div key={order.id} className="border rounded-lg overflow-hidden">
                       <div className="flex items-center justify-between p-4 bg-gray-50">
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">
-                            {order.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
-                          </p>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium text-gray-900">
+                              {order.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
+                            </p>
+                            <Badge variant={order.status === 'paid' ? 'default' : order.status === 'pending' ? 'secondary' : 'destructive'} className="text-xs">
+                              {order.status === 'paid' ? '✓ Paid' : order.status === 'pending' ? '⏱ Pending' : order.status}
+                            </Badge>
+                          </div>
                           <p className="text-sm text-gray-500">
                             {branches.find(b => b.id === order.branch)?.name} • {new Date(order.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-green-600">KES {order.total}</p>
-                          <p className="text-xs text-gray-500 font-mono">{order.mpesaCode}</p>
+                        <div className="text-right flex flex-col items-end gap-2">
+                          <div>
+                            <p className="font-bold text-green-600">KES {order.total}</p>
+                            {order.mpesaCode && <p className="text-xs text-gray-500 font-mono">{order.mpesaCode}</p>}
+                          </div>
+                          {order.status === 'pending' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRetryPayment(order.id, order.total)}
+                              disabled={retryingOrderId === order.id}
+                              className="h-8 text-xs"
+                            >
+                              {retryingOrderId === order.id ? (
+                                <><Loader2 className="mr-1 h-3 w-3 animate-spin" /> Processing</>
+                              ) : (
+                                <><RefreshCw className="mr-1 h-3 w-3" /> Retry Payment</>
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                       {order.deliveryAddress && (

@@ -7,6 +7,7 @@ import orderRoutes from './routes/orders';
 import inventoryRoutes from './routes/inventory';
 import paymentRoutes from './routes/payments';
 import { errorHandler } from './middleware/errorHandler';
+import { startCleanupJob } from './jobs/cleanupPendingOrders';
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: true,
+  origin: process.env.FRONTEND_URL || true,
   credentials: true,
 }));
 
@@ -36,5 +37,17 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 // Error handling
 app.use(errorHandler);
 
-// ✅ IMPORTANT: Export app instead of listening
+// For serverless deployment (Vercel)
 export default app;
+
+// For local development
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Start the cleanup job for pending orders
+    startCleanupJob();
+  });
+}
